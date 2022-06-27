@@ -47,7 +47,7 @@ void delay(string inFilePath, string outFilePath, int delayTime = 500, int feedb
 
     SndfileHandle outFile(outFilePath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, sampleRate);
 
-    const int bufferSize = (sampleRate * channels) * delayTimeSec;
+    const int bufferSize = ceil(sampleRate * channels * delayTimeSec);
 
     if (log)
         cout
