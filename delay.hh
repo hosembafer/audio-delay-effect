@@ -20,60 +20,64 @@
 // dryWet         | % |   [0, 100] | 50
 // log                    [true/false] | false
 
-using namespace std;
-
-bool inRange(int low, int high, int x)
+bool inRange(const int low, const int high, const int x)
 {
     return ((x - low) <= (high - low));
 }
 
-void delay(string inFilePath, string outFilePath, int delayTime = 500, int feedback = 50, int dryWet = 50, bool log = false)
+void delay(
+    const std::string &inFilePath,
+    const std::string &outFilePath,
+    const int delayTime = 500,
+    const int feedback = 50,
+    const int dryWet = 50,
+    const bool log = false)
 {
     if (!inRange(0, 1000, delayTime))
-        throw invalid_argument("Delay Time must be between 0 and 1000");
+        throw std::invalid_argument("Delay Time must be between 0 and 1000");
     if (!inRange(0, 100, feedback))
-        throw invalid_argument("Feedback must be between 0 and 100");
+        throw std::invalid_argument("Feedback must be between 0 and 100");
     if (!inRange(0, 100, dryWet))
-        throw invalid_argument("Dry/Wet must be between 0 and 100");
+        throw std::invalid_argument("Dry/Wet must be between 0 and 100");
 
-    float delayTimeSec = (float)delayTime / 1000;
-    float feedbackRatio = (float)feedback / 100;
-    float dryRatio = 1.0f - ((float)dryWet / 100);
-    float wetRatio = (float)dryWet / 100;
+    const float delayTimeSec = (float)delayTime / 1000;
+    const float feedbackRatio = (float)feedback / 100;
+    const float dryRatio = 1.0f - ((float)dryWet / 100);
+    const float wetRatio = (float)dryWet / 100;
 
     SndfileHandle inFile(inFilePath);
-    float sampleRate = (float)inFile.samplerate();
-    float frames = (float)inFile.frames();
-    int channels = inFile.channels();
-    float duration = frames / sampleRate;
+    if (inFile.error())
+        throw std::runtime_error(std::string("delay: ") + inFile.strError() + " input: " + inFilePath);
 
-    if (delayTimeSec > duration)
-        throw invalid_argument("Delay Time must not exceed duration of input");
+    const float sampleRate = (float)inFile.samplerate();
+    const float frames = (float)inFile.frames();
+    const int channels = inFile.channels();
+    const float duration = frames / sampleRate;
 
     SndfileHandle outFile(outFilePath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, sampleRate);
 
     const int bufferSize = ceil(sampleRate * channels * delayTimeSec);
 
     if (log)
-        cout
-            << "Sample Rate: " << sampleRate << endl
-            << "Frames: " << inFile.frames() << endl
-            << "Channels: " << channels << endl
-            << "Duration: " << duration << endl
-            << "Input: " << inFilePath << endl
-            << "Output: " << outFilePath << endl
-            << "Delay Time: " << delayTimeSec << endl
-            << "Feedback: " << feedbackRatio << endl
-            << "Dry: " << dryRatio << endl
-            << "Wet: " << wetRatio << endl
-            << "Buffer Size: " << bufferSize << endl
-            << endl;
+        std::cout
+            << "Sample Rate: " << sampleRate << std::endl
+            << "Frames: " << inFile.frames() << std::endl
+            << "Channels: " << channels << std::endl
+            << "Duration: " << duration << std::endl
+            << "Input: " << inFilePath << std::endl
+            << "Output: " << outFilePath << std::endl
+            << "Delay Time: " << delayTimeSec << std::endl
+            << "Feedback: " << feedbackRatio << std::endl
+            << "Dry: " << dryRatio << std::endl
+            << "Wet: " << wetRatio << std::endl
+            << "Buffer Size: " << bufferSize << std::endl
+            << std::endl;
 
     float dataBuffer[bufferSize];
     float prevBuffer[bufferSize];
     memset(prevBuffer, 0, bufferSize * sizeof(float));
 
-    int readCount;
+    sf_count_t readCount;
     while ((readCount = (int)inFile.read(dataBuffer, bufferSize)))
     {
         float outDataBuffer[readCount];
@@ -81,8 +85,10 @@ void delay(string inFilePath, string outFilePath, int delayTime = 500, int feedb
         {
             for (int i = channel; i < readCount + (channels - 1); i += channels)
             {
+                // Dry
                 outDataBuffer[i] = dataBuffer[i] * dryRatio;
 
+                // Wet
                 outDataBuffer[i] += ((dataBuffer[i] + prevBuffer[i]) * wetRatio * feedbackRatio);
             }
         }
