@@ -79,7 +79,7 @@ void delay(string inFilePath, string outFilePath, int delayTime = 500, int feedb
         float outDataBuffer[readCount];
         for (int channel = 0; channel < channels; channel++)
         {
-            for (int i = channel; i < readCount + 1; i += channels)
+            for (int i = channel; i < readCount + (channels - 1); i += channels)
             {
                 outDataBuffer[i] = dataBuffer[i] * dryRatio;
 
