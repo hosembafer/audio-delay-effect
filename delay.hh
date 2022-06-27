@@ -29,7 +29,7 @@ bool inRange(int low, int high, int x)
 
 void delay(string inFilePath, string outFilePath, int delayTime = 500, int feedback = 50, int dryWet = 50, bool log = false)
 {
-    if (!inRange(0, 1000, delayTime))
+    if (!inRange(0, 2000, delayTime))
         throw invalid_argument("Delay Time must be between 0 and 1000");
     if (!inRange(0, 100, feedback))
         throw invalid_argument("Feedback must be between 0 and 100");
@@ -42,8 +42,13 @@ void delay(string inFilePath, string outFilePath, int delayTime = 500, int feedb
     float wetRatio = (float)dryWet / 100;
 
     SndfileHandle inFile(inFilePath);
-    float sampleRate = (double)inFile.samplerate();
+    float sampleRate = (float)inFile.samplerate();
+    float frames = (float)inFile.frames();
     int channels = inFile.channels();
+    float duration = frames / sampleRate;
+
+    if (delayTimeSec > duration)
+        throw invalid_argument("Delay Time must not exceed duration of input");
 
     SndfileHandle outFile(outFilePath, SFM_WRITE, SF_FORMAT_WAV | SF_FORMAT_PCM_16, channels, sampleRate);
 
@@ -52,7 +57,12 @@ void delay(string inFilePath, string outFilePath, int delayTime = 500, int feedb
     if (log)
         cout
             << "Sample Rate: " << sampleRate << endl
+            << "Frames: " << inFile.frames() << endl
             << "Channels: " << channels << endl
+            << "Duration: " << duration << endl
+            << "Input: " << inFilePath << endl
+            << "Output: " << outFilePath << endl
+            << "Delay Time: " << delayTimeSec << endl
             << "Feedback: " << feedbackRatio << endl
             << "Dry: " << dryRatio << endl
             << "Wet: " << wetRatio << endl
