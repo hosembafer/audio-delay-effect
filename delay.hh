@@ -29,7 +29,7 @@ bool inRange(int low, int high, int x)
 
 void delay(string inFilePath, string outFilePath, int delayTime = 500, int feedback = 50, int dryWet = 50, bool log = false)
 {
-    if (!inRange(0, 2000, delayTime))
+    if (!inRange(0, 1000, delayTime))
         throw invalid_argument("Delay Time must be between 0 and 1000");
     if (!inRange(0, 100, feedback))
         throw invalid_argument("Feedback must be between 0 and 100");
