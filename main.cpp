@@ -1,4 +1,4 @@
-#include <filesystem>
+#include <sys/stat.h>
 #include "delay.hh"
 
 int main()
@@ -8,7 +8,7 @@ int main()
     int dryWet = 50;
     bool log = true;
 
-    std::filesystem::create_directory("results");
+    mkdir("results", 0700);
     
 
     delay("./samples/punch-double-stereo.wav", "./results/punch-result-delay-stereo.wav", delayTime, feedback, dryWet, log);
