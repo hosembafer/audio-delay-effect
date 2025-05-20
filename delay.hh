@@ -1,8 +1,8 @@
 /**
  * @file delay.hh
  * @brief Audio Delay linear effect
- * @author Rafael Hovhannisyan <hovhannisian.rafael@gmail.com>
- * @version 0.1
+ * @author Rafayel Hovhannisyan <rafayel.hovhannisyan.95@gmail.com>
+ * @version 1.0
  * @date 2022-06-26
  *
  * @copyright Copyright (c) 2022
